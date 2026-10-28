@@ -18,7 +18,7 @@ Build SDK from [FormatJS](https://github.com/formatjs/formatjs), then run this a
 git clone https://github.com/formatjs/formatjs.git /tmp/formatjs-hermes-source
 cd /tmp/formatjs-hermes-source
 git checkout 89459cc997dbb1f84df5bf6707e66a9c130adf80
-bazel build --extra_toolchains=@androidndk//:all --spawn_strategy=local //native/hermes/package:android_sdk
+bazel build --extra_toolchains=@androidndk//:all --spawn_strategy=local --//crates/intl_data:locales=en,fr //native/hermes/package:android_sdk
 mkdir -p /tmp/formatjs-hermes-android-sdk
 tar -xzf bazel-bin/native/hermes/package/formatjs_intl_hermes_android-0.1.0.tar.gz -C /tmp/formatjs-hermes-android-sdk
 export FORMATJS_HERMES_SDK=/tmp/formatjs-hermes-android-sdk
@@ -38,6 +38,8 @@ cd android
 `IntlScreenTest` checks Hermes, native installation, and every Intl API on
 rendered screen. It saves app-content `intl-screen.png` through Android
 MediaStore so Gradle can uninstall the test APK before capture retrieval.
+The build above includes only English and French locale data. Change the comma-separated
+`--//crates/intl_data:locales=` value and rebuild the SDK to ship another set.
 Pull and compare it against reviewed baseline:
 
 ```sh

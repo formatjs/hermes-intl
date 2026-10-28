@@ -43,7 +43,7 @@ jobs:
       - name: Build Rust Android SDK
         working-directory: formatjs
         run: |
-          bazel build --extra_toolchains=@androidndk//:all --spawn_strategy=local //native/hermes/package:android_sdk
+          bazel build --extra_toolchains=@androidndk//:all --spawn_strategy=local --//crates/intl_data:locales=en,fr //native/hermes/package:android_sdk
           mkdir -p "$RUNNER_TEMP/formatjs-hermes-sdk"
           tar -xzf bazel-bin/native/hermes/package/formatjs_intl_hermes_android-0.1.0.tar.gz -C "$RUNNER_TEMP/formatjs-hermes-sdk"
           echo "FORMATJS_HERMES_SDK=$RUNNER_TEMP/formatjs-hermes-sdk" >> "$GITHUB_ENV"

@@ -33,7 +33,9 @@ const results = [
   ),
   check(
     'DisplayNames',
-    () => new Intl.DisplayNames('en', {type: 'language'}).of('fr') === 'French'
+    () =>
+      new Intl.DisplayNames('en', {type: 'language'}).of('fr') === 'French' &&
+      new Intl.DisplayNames('fr', {type: 'language'}).of('en') === 'anglais'
   ),
   check(
     'Segmenter',
