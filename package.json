@@ -6,7 +6,9 @@
     "android": "react-native run-android",
     "start": "react-native start",
     "vrt": "node vrt/compare.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "ios": "react-native run-ios",
+    "test:ios": "bash .github/scripts/ios-e2e.sh"
   },
   "codegenConfig": {
     "name": "AppSpecs",
@@ -14,6 +16,11 @@
     "jsSrcsDir": "specs",
     "android": {
       "javaPackageName": "com.formatjshermes.specs"
+    },
+    "ios": {
+      "modulesProvider": {
+        "NativeIntlModule": "NativeIntlModuleProvider"
+      }
     }
   },
   "dependencies": {
@@ -30,7 +37,8 @@
     "@types/react": "^19.2.0",
     "pixelmatch": "8.0.0",
     "pngjs": "7.0.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "@react-native-community/cli-platform-ios": "20.2.0"
   },
   "engines": {
     "node": ">= 22.11.0"

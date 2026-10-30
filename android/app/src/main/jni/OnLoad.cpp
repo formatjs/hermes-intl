@@ -5,11 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <formatjs/hermes/intl.h>
-
-#include <AppSpecsJSI.h>
-#include <memory>
-#include <utility>
+#include <NativeIntlModule.h>
 
 #include <DefaultComponentsRegistry.h>
 #include <DefaultTurboModuleManagerDelegate.h>
@@ -26,18 +22,6 @@
 #endif
 
 namespace facebook::react {
-
-class NativeIntlModule final : public NativeIntlModuleCxxSpec<NativeIntlModule> {
- public:
-  explicit NativeIntlModule(std::shared_ptr<CallInvoker> jsInvoker)
-      : NativeIntlModuleCxxSpec(std::move(jsInvoker)) {}
-
-  bool install(jsi::Runtime& runtime) {
-    formatjs::installIntl(runtime);
-    return true;
-  }
-
-};
 
 void registerComponents(
     std::shared_ptr<const ComponentDescriptorProviderRegistry> registry) {
