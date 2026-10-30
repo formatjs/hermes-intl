@@ -37,13 +37,13 @@ Build an SDK containing only English and French, then run the same app:
 ```sh
 git clone https://github.com/formatjs/formatjs.git /tmp/formatjs
 cd /tmp/formatjs
-git checkout fa0ccb02a8889f4a6c93abacd204ec2ad10f9a73
+git checkout ee01dca6e5be70b87ac2f720ef3f58ba4c998c21
 bazel build -c opt --extra_toolchains=@androidndk//:all --spawn_strategy=local \
   --//crates/intl_data:locales=en,fr //native/hermes/package:android_sdk
 archive=$(bazel cquery -c opt --extra_toolchains=@androidndk//:all \
   --//crates/intl_data:locales=en,fr --output=files //native/hermes/package:android_sdk)
 mkdir -p /tmp/formatjs-intl-sdk
-tar -xzf "$archive" -C /tmp/formatjs-intl-sdk
+tar -xmzf "$archive" -C /tmp/formatjs-intl-sdk
 export FORMATJS_HERMES_SDK=/tmp/formatjs-intl-sdk
 cd /path/to/hermes-intl
 npm run android
