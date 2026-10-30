@@ -1,56 +1,70 @@
-# Hermes Intl React Native example
+# Intl on Hermes
 
-Android arm64/x86_64 app. Installs all twelve Rust-backed Intl polyfills into React
-Native's Hermes runtime through a synchronous C++ TurboModule in `OnLoad.cpp`. Screen shows
-one result per API. Android instrumentation test reads the rendered text and
-captures a screenshot.
+Small React Native Android app using all twelve FormatJS Rust-backed Intl APIs.
+One screen shows results. Tests read the rendered text and compare a screenshot.
+Packaging lives in [FormatJS](https://github.com/formatjs/formatjs/tree/main/native/hermes/package).
 
-The Android SDK build is in [FormatJS PR #7726](https://github.com/formatjs/formatjs/pull/7726).
-CI pins its source commit until that PR lands.
+## Run
 
-Requires Node 22+, Java 17, Android SDK 36, NDK 27.1.12297006, an Android
-arm64 device or x86_64 emulator, and Bazel 9. Set `ANDROID_HOME` and
-`ANDROID_NDK_HOME` to installed SDK and NDK directories.
+Requires Node 22+, Java 17, Android SDK 36, NDK 27.1.12297006, and an arm64
+Android device or x86_64 emulator. Set `ANDROID_HOME` and `ANDROID_NDK_HOME`.
 
-Build SDK from [FormatJS](https://github.com/formatjs/formatjs), then run this app:
+Download and extract `formatjs-hermes-intl-android.tar.gz` from an
+[SDK release](https://github.com/formatjs/formatjs/releases?q=formatjs-hermes-intl).
+Verify its checksums using the [SDK guide](https://github.com/formatjs/formatjs/tree/main/native/hermes/package).
+Until the first SDK release, use the source build below.
 
 ```sh
-git clone https://github.com/formatjs/formatjs.git /tmp/formatjs-hermes-source
-cd /tmp/formatjs-hermes-source
-git checkout 89459cc997dbb1f84df5bf6707e66a9c130adf80
-bazel build --extra_toolchains=@androidndk//:all --spawn_strategy=local --//crates/intl_data:locales=en,fr //native/hermes/package:android_sdk
-mkdir -p /tmp/formatjs-hermes-android-sdk
-tar -xzf bazel-bin/native/hermes/package/formatjs_intl_hermes_android-0.1.0.tar.gz -C /tmp/formatjs-hermes-android-sdk
-export FORMATJS_HERMES_SDK=/tmp/formatjs-hermes-android-sdk
-cd /path/to/hermes-intl
+export FORMATJS_HERMES_SDK=/absolute/path/to/extracted-sdk
 npm ci
 npm start
 ```
 
-In another terminal with same `FORMATJS_HERMES_SDK`:
+In another terminal, with the same `FORMATJS_HERMES_SDK`:
 
 ```sh
 npm run android
-cd android
-./gradlew connectedDebugAndroidTest
 ```
 
-`IntlScreenTest` checks Hermes, native installation, and every Intl API on
-rendered screen. It saves app-content `intl-screen.png` through Android
-MediaStore so Gradle can uninstall the test APK before capture retrieval.
-The build above includes only English and French locale data. Change the comma-separated
-`--//crates/intl_data:locales=` value and rebuild the SDK to ship another set.
-Pull and compare it against reviewed baseline:
+CMake compiles the SDK adapter against React Native's JSI headers. The synchronous
+TurboModule calls `formatjs::installIntl(runtime)` before the app renders. Rust
+and default locale data are prebuilt; no Rust compiler needed for this path.
+
+## Custom locales
+
+Build an SDK containing only English and French, then run the same app:
 
 ```sh
+git clone https://github.com/formatjs/formatjs.git /tmp/formatjs
+cd /tmp/formatjs
+git checkout fa0ccb02a8889f4a6c93abacd204ec2ad10f9a73
+bazel build -c opt --extra_toolchains=@androidndk//:all --spawn_strategy=local \
+  --//crates/intl_data:locales=en,fr //native/hermes/package:android_sdk
+archive=$(bazel cquery -c opt --extra_toolchains=@androidndk//:all \
+  --//crates/intl_data:locales=en,fr --output=files //native/hermes/package:android_sdk)
+mkdir -p /tmp/formatjs-intl-sdk
+tar -xzf "$archive" -C /tmp/formatjs-intl-sdk
+export FORMATJS_HERMES_SDK=/tmp/formatjs-intl-sdk
+cd /path/to/hermes-intl
+npm run android
+```
+
+Bazel 9 builds both Android ABIs. Omit the locale flag for the default Chromium
+desktop language set, or use `--//crates/intl_data:locales=\*` for all CLDR locales.
+Change the list and rebuild the SDK to add a locale. Segmenter/Collator/Locale
+static data is unchanged. The screen checks English output and French DisplayNames.
+
+## Test
+
+```sh
+npm run typecheck
+cd android
+./gradlew connectedDebugAndroidTest
+cd ..
 adb pull /sdcard/Pictures/FormatJS/intl-screen.png /tmp/intl-screen.png
 npm run vrt -- /tmp/intl-screen.png
 ```
 
-CI builds SDK from FormatJS and runs same test on pinned API 35 x86_64 Pixel 7 emulator, uploads actual and
-diff images, then compares pixels with `vrt/intl-screen.png`. Existing editor
-VRT handles browser screenshots; this baseline belongs to Android emulator.
-
-The Android SDK archive uses the same C++ adapter sources as desktop SDK,
-but provides Android arm64 and x86_64 Rust archives. CMake compiles adapter against
-React Native's JSI headers. No desktop Hermes library enters APK.
+CI runs the same screen and screenshot checks with default data and the custom
+`en,fr` build on a pinned API 35 x86_64 Pixel 7 emulator. Screenshot baseline lives
+in `vrt/intl-screen.png`; differences and device logs are uploaded on failure.

@@ -5,20 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <formatjs/hermes/canonical_locales.h>
-#include <formatjs/hermes/intl_collator.h>
-#include <formatjs/hermes/intl_displaynames.h>
-#include <formatjs/hermes/intl_durationformat.h>
-#include <formatjs/hermes/intl_listformat.h>
-#include <formatjs/hermes/intl_locale.h>
-#include <formatjs/hermes/intl_numberformat.h>
-#include <formatjs/hermes/intl_pluralrules.h>
-#include <formatjs/hermes/intl_relativetimeformat.h>
-#include <formatjs/hermes/intl_segmenter.h>
-#include <formatjs/hermes/supported_values.h>
+#include <formatjs/hermes/intl.h>
 
 #include <AppSpecsJSI.h>
-#include <formatjs/hermes/intl_datetimeformat.h>
 #include <memory>
 #include <utility>
 
@@ -44,26 +33,10 @@ class NativeIntlModule final : public NativeIntlModuleCxxSpec<NativeIntlModule> 
       : NativeIntlModuleCxxSpec(std::move(jsInvoker)) {}
 
   bool install(jsi::Runtime& runtime) {
-    if (dateTime_) return true;
-    formatjs::installCanonicalLocales(runtime);
-    formatjs::installSupportedValuesOf(runtime);
-    formatjs::installLocale(runtime);
-    // Capture the installed Locale brand for canonicalization.
-    formatjs::installCanonicalLocales(runtime);
-    formatjs::installPluralRules(runtime);
-    formatjs::installListFormat(runtime);
-    formatjs::installDisplayNames(runtime);
-    formatjs::installSegmenter(runtime);
-    formatjs::installCollator(runtime);
-    formatjs::installNumberFormat(runtime);
-    formatjs::installRelativeTimeFormat(runtime);
-    dateTime_ = formatjs::installDateTimeFormat(runtime);
-    formatjs::installDurationFormat(runtime);
+    formatjs::installIntl(runtime);
     return true;
   }
 
- private:
-  std::unique_ptr<formatjs::DateTimeFormatInstallation> dateTime_;
 };
 
 void registerComponents(

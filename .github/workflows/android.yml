@@ -13,12 +13,16 @@ jobs:
   android:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        locale_data: [default, custom]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/checkout@v7
         with:
           repository: formatjs/formatjs
-          ref: 89459cc997dbb1f84df5bf6707e66a9c130adf80
+          ref: fa0ccb02a8889f4a6c93abacd204ec2ad10f9a73
           path: formatjs
       - uses: actions/setup-node@v7
         with:
@@ -43,9 +47,14 @@ jobs:
       - name: Build Rust Android SDK
         working-directory: formatjs
         run: |
-          bazel build --extra_toolchains=@androidndk//:all --spawn_strategy=local --//crates/intl_data:locales=en,fr //native/hermes/package:android_sdk
+          args=(-c opt --extra_toolchains=@androidndk//:all --spawn_strategy=local)
+          if [ "${{ matrix.locale_data }}" = custom ]; then
+            args+=(--//crates/intl_data:locales=en,fr)
+          fi
+          bazel build "${args[@]}" //native/hermes/package:android_sdk
+          archive=$(bazel cquery "${args[@]}" --output=files //native/hermes/package:android_sdk)
           mkdir -p "$RUNNER_TEMP/formatjs-hermes-sdk"
-          tar -xzf bazel-bin/native/hermes/package/formatjs_intl_hermes_android-0.1.0.tar.gz -C "$RUNNER_TEMP/formatjs-hermes-sdk"
+          tar -xzf "$archive" -C "$RUNNER_TEMP/formatjs-hermes-sdk"
           echo "FORMATJS_HERMES_SDK=$RUNNER_TEMP/formatjs-hermes-sdk" >> "$GITHUB_ENV"
       - name: Remove SDK source checkout
         run: rm -rf formatjs
@@ -73,7 +82,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: hermes-android-screen
+          name: hermes-android-screen-${{ matrix.locale_data }}
           path: |
             ${{ runner.temp }}/intl-screen.png
             ${{ runner.temp }}/intl-screen-diff.png
