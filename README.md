@@ -12,7 +12,7 @@ Android device or x86_64 emulator. Set `ANDROID_HOME` and `ANDROID_NDK_HOME`.
 Download and extract `formatjs-hermes-intl-android.tar.gz` from an
 [SDK release](https://github.com/formatjs/formatjs/releases?q=formatjs-hermes-intl).
 Verify its checksums using the [SDK guide](https://github.com/formatjs/formatjs/tree/main/native/hermes/package).
-Until the first SDK release, use the source build below.
+If release archives are not available yet, use the source build below.
 
 ```sh
 export FORMATJS_HERMES_SDK=/absolute/path/to/extracted-sdk
@@ -51,7 +51,7 @@ at `ios/FormatJSSDK`; keep that directory available when building from Xcode.
 The app compiles the SDK adapters against React Native's JSI headers and links
 the device or simulator Rust archive for its current architecture.
 
-Until an SDK release is available, build from the pinned FormatJS commit:
+If release archives are not available yet, build from the pinned FormatJS commit:
 
 ```sh
 git clone https://github.com/formatjs/formatjs.git /tmp/formatjs
