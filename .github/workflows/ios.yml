@@ -1,0 +1,66 @@
+name: React Native Hermes Intl iOS
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        locale_data: [default, custom]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7
+        with:
+          repository: formatjs/formatjs
+          ref: 430684ec337cc7129898cafb0ec9798d90a30033
+          path: formatjs
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+      - uses: bazel-contrib/setup-bazel@0.19.1
+        with:
+          bazelisk-cache: true
+          repository-cache: true
+          disk-cache: hermes-ios
+      - name: Build Rust Apple SDK
+        working-directory: formatjs
+        run: |
+          export DEVELOPER_DIR="$(xcode-select -p)"
+          args=(-c opt --config=hermes-apple)
+          if [ "${{ matrix.locale_data }}" = custom ]; then
+            args+=(--//crates/intl_data:locales=en,fr)
+          fi
+          bazel build "${args[@]}" //native/hermes/package:apple_sdk
+          archive=$(bazel cquery "${args[@]}" --output=files //native/hermes/package:apple_sdk)
+          mkdir -p "$RUNNER_TEMP/formatjs-hermes-sdk"
+          tar -xmzf "$archive" -C "$RUNNER_TEMP/formatjs-hermes-sdk"
+          echo "FORMATJS_HERMES_SDK=$RUNNER_TEMP/formatjs-hermes-sdk" >> "$GITHUB_ENV"
+      - name: Remove SDK source checkout
+        run: rm -rf formatjs
+      - name: Install app dependencies
+        run: |
+          npm ci
+          npm run typecheck
+          cd ios
+          bundle exec pod install
+      - name: iOS screen E2E
+        run: npm run test:ios
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: hermes-ios-screen-${{ matrix.locale_data }}
+          path: ${{ runner.temp }}/ios-e2e.*

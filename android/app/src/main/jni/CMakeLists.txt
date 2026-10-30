@@ -10,3 +10,5 @@ endif()
 include("${FORMATJS_HERMES_SDK}/cmake/FormatJSIntl.cmake")
 formatjs_intl(${CMAKE_PROJECT_NAME})
 target_compile_features(${CMAKE_PROJECT_NAME} PRIVATE cxx_std_20)
+
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ../../../../../shared)
