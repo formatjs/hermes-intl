@@ -13,7 +13,13 @@ final class IntlScreenTests: XCTestCase {
       "DurationFormat",
     ]
     for name in names {
-      XCTAssertTrue(app.staticTexts["\(name): PASS"].waitForExistence(timeout: 60), name)
+      let row = app.staticTexts.matching(identifier: "\(name): PASS").firstMatch
+      XCTAssertTrue(row.waitForExistence(timeout: 60), name)
+      XCTAssertFalse(row.frame.isEmpty, name)
+      XCTAssertTrue(app.frame.contains(row.frame), "\(name): \(row.frame)")
+      if app.statusBars.firstMatch.exists {
+        XCTAssertGreaterThanOrEqual(row.frame.minY, app.statusBars.firstMatch.frame.maxY, name)
+      }
     }
     XCTAssertEqual(app.staticTexts.matching(NSPredicate(format: "label ENDSWITH ': FAIL'")).count, 0)
     let screenshot = XCTAttachment(screenshot: app.screenshot())

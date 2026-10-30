@@ -46,6 +46,20 @@ class SceneDelegate: RCTDefaultReactNativeFactoryDelegate, UIWindowSceneDelegate
     RCTLinkingManager.scene(scene, continue: userActivity)
   }
 
+  override func setRootView(_ rootView: UIView, toRootViewController rootViewController: UIViewController) {
+    let container = rootViewController.view!
+    container.backgroundColor = .white
+    container.addSubview(rootView)
+    rootView.translatesAutoresizingMaskIntoConstraints = false
+    let safeArea = container.safeAreaLayoutGuide
+    NSLayoutConstraint.activate([
+      rootView.topAnchor.constraint(equalTo: safeArea.topAnchor),
+      rootView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor),
+      rootView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor),
+      rootView.bottomAnchor.constraint(equalTo: safeArea.bottomAnchor),
+    ])
+  }
+
   override func bundleURL() -> URL? {
     #if DEBUG
     RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
